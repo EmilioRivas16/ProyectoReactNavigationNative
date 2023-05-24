@@ -1,10 +1,18 @@
 import React from 'react';
-import {View} from 'react-native';
+import { StyleSheet,View,TouchableWithoutFeedback} from 'react-native';
 
-export default function InsertSales() {
+
+
+
+export default function InsertSales({ navigation }: any) {
+
+    
     return (
-        <View>
-            Insetar Ventas
-        </View>
+        <TouchableWithoutFeedback>
+            <View>
+
+            </View>
+        </TouchableWithoutFeedback>
     );
 }
+

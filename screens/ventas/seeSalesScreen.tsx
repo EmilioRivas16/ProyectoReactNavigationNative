@@ -1,10 +1,13 @@
 import React from 'react';
-import {View} from 'react-native';
+import { View,TouchableWithoutFeedback} from 'react-native';
 
-export default function SeeSales() {
+export default function SeeSales({ navigation, route }: any) {
+
     return (
-        <View>
-            Ver Ventas
-        </View>
+        <TouchableWithoutFeedback>
+            <View>
+
+            </View>
+        </TouchableWithoutFeedback>
     );
 }
