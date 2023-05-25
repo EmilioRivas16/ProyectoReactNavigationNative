@@ -15,7 +15,13 @@ export default function LoginAndCreateAccount({navigation}: any) {
 
     const handleLogin = () => {
         signInWithEmailAndPassword(auth, email, password)
-        navigation.navigate("Panel");
+        .then(() => {
+            navigation.navigate("Panel");
+        })
+        .catch(error => {
+            Alert.alert(error.message);
+        })
+        
     };
 
     const handleCreateAccount = () => {

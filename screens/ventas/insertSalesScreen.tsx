@@ -11,6 +11,7 @@ interface Product {
     id: string;
     nombre_producto: string;
     precio_venta: string;
+    inventario: string;
 }
 
 interface Service {
@@ -58,6 +59,7 @@ export default function InsertSales({ navigation }: any) {
     
             const combinedPrices = [...productsPrices, ...servicesPrices];
             setPrecios(combinedPrices);
+
         })
         .catch(error => {
             console.error('Error al obtener los datos de las APIs:', error);
@@ -68,6 +70,7 @@ export default function InsertSales({ navigation }: any) {
         setSelected(val);
         const selectedIdx = data.findIndex((item) => item.value === val);
         setSelectedPosition(selectedIdx);
+
         const precioItemSeleccionado = precios[selectedIdx].precio;
         setPrecioItemActual(precioItemSeleccionado);
     };
@@ -111,6 +114,24 @@ export default function InsertSales({ navigation }: any) {
 
     const [errors, validateField] = useValidation(validations);
 
+    const obtenerIdProducto = async (nombreProducto: string | undefined): Promise<string | null> => {
+        try {
+            const response = await fetch('https://6464e4f3228bd07b353c1f9d.mockapi.io/productos');
+            const data = await response.json();
+
+            const productoEncontrado = data.find((producto: any) => producto.nombre_producto === nombreProducto);
+
+            if (productoEncontrado) {
+                return productoEncontrado.id;
+            } else {
+                return null;
+            }
+        } catch (error) {
+            console.error('Error al obtener el ID del producto:', error);
+            return null;
+        }
+    };
+
     const insertarProducto = () => {
         let hasError = false;
         const errorMessages: SaleState = {};
@@ -141,6 +162,68 @@ export default function InsertSales({ navigation }: any) {
             },
             body: JSON.stringify(updatedSaleState)
         });
+
+        const nombreProducto = saleState.articulo_comprado
+
+        obtenerIdProducto(nombreProducto)
+        .then((idProducto) => {
+
+            if (idProducto) {
+
+                const fetchProducto = async () => {
+                    try {
+                        const response = await axios.get('https://6464e4f3228bd07b353c1f9d.mockapi.io/productos');
+                        const productos: Product[] = response.data;
+                        const productoEncontrado = productos.find(producto => producto.id === idProducto);
+                
+                        if (productoEncontrado) {
+                        const stockActualProduct = productoEncontrado.inventario;
+
+                        const restarCantidadArticulos = async (idProducto: string, cantidadArticulos: number): Promise<void> => {
+                            try {
+                                console.log("Stock actual: ", stockActualProduct)
+                                console.log("Cantidad de articulos a comprar: ", cantidadArticulos)
+                            const response = await fetch(`https://6464e4f3228bd07b353c1f9d.mockapi.io/productos/${idProducto}`, {
+                                method: 'PUT',
+                                headers: {
+                                'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                inventario: Number(stockActualProduct) - cantidadArticulos,
+                                }),
+                                
+                            });
+                        
+                            if (!response.ok) {
+                                throw new Error('No se pudo actualizar el inventario del producto');
+                            }
+                        
+                            console.log(`Se ha actualizado el inventario del producto con ID "${idProducto}"`);
+                            } catch (error) {
+                            console.error('Error al restar la cantidad de artículos al inventario:', error);
+                            }
+                        };
+    
+                        restarCantidadArticulos(idProducto, Number(cantidadArticulos));
+
+                        } else {
+                        console.log('Producto no encontrado');
+                        }
+                    } catch (error) {
+                        console.log('Error al obtener los productos:', error);
+                    }
+                };
+
+                fetchProducto()
+
+            } else {
+            console.log(`No se encontró ningún producto con el nombre "${nombreProducto}"`);
+            }
+        })
+        .catch((error) => {
+            console.error('Error al obtener el ID del producto:', error);
+        });
+
 
         navigation.navigate('Ventas');
     }
